@@ -60,6 +60,9 @@ export default buildConfig({
     },
   },
   collections: [Users, Media],
+  custom: {
+    cloudflareEnv: cloudflare.env,
+  },
   editor: lexicalEditor(),
   secret:
     process.env.PAYLOAD_SECRET ||

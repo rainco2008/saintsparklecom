@@ -1,5 +1,6 @@
 import type { Plugin } from 'payload'
 
+import { createDirectoryAdminEndpoints } from './admin/endpoints'
 import { DirectoryAuditLogs } from './collections/DirectoryAuditLogs'
 import { DirectoryCategories } from './collections/DirectoryCategories'
 import { DirectoryItems } from './collections/DirectoryItems'
@@ -16,6 +17,21 @@ export const cloudflareDirectoryPlugin =
 
     return {
       ...config,
+      admin: {
+        ...(config.admin || {}),
+        components: {
+          ...(config.admin?.components || {}),
+          views: {
+            ...(config.admin?.components?.views || {}),
+            directory: {
+              Component: {
+                path: './plugins/cloudflare-directory/admin/DirectoryDashboard',
+              },
+              path: '/directory',
+            },
+          },
+        },
+      },
       collections: [
         ...(config.collections || []),
         DirectoryCategories,
@@ -23,6 +39,7 @@ export const cloudflareDirectoryPlugin =
         DirectoryJobs,
         DirectoryAuditLogs,
       ],
+      endpoints: [...(config.endpoints || []), ...createDirectoryAdminEndpoints()],
       globals: [...(config.globals || []), DirectorySettings],
     }
   }

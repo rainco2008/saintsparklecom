@@ -54,3 +54,14 @@ export {
   listDirectorySitemapItems,
   listLatestDirectoryItems,
 } from './queries'
+
+export {
+  getDirectoryCategoryList,
+  getDirectoryDetail,
+  getDirectoryHomeList,
+  getDirectorySEOMetadata,
+  getDirectorySitemapItems,
+} from './helpers'
+export type { DirectorySEOMetadata } from './helpers'
+export { readThroughDirectoryCache } from './cache'
+export type { DirectoryCachedResult, DirectoryCacheStatus } from './cache'

@@ -70,6 +70,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     \`target_type\` text NOT NULL,
     \`target_id\` text NOT NULL,
     \`metadata\` text,
+    \`updated_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
     \`created_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL
   );`)
   await db.run(
@@ -86,4 +87,3 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
   await db.run(sql`DROP TABLE \`directory_items\`;`)
   await db.run(sql`DROP TABLE \`directory_categories\`;`)
 }
-

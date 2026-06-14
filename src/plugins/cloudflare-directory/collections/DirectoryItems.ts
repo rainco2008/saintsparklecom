@@ -1,5 +1,8 @@
 import type { CollectionAfterChangeHook, CollectionConfig } from 'payload'
 
+import { createAndEnqueueDirectoryJob } from '../queues'
+import type { DirectoryBindings } from '../types'
+
 const createPublishSideEffects: CollectionAfterChangeHook = async ({ doc, operation, previousDoc, req }) => {
   if (doc.status !== 'published' || previousDoc?.status === 'published') {
     return doc
@@ -23,17 +26,18 @@ const createPublishSideEffects: CollectionAfterChangeHook = async ({ doc, operat
     req,
   })
 
-  await req.payload.create({
-    collection: 'directory-jobs',
-    data: {
-      attempt: 0,
-      jobId: `cache-rebuild:item:${targetId}:${Date.now()}`,
-      status: 'pending',
-      targetId,
-      type: 'cache.rebuild',
-    },
-    req,
-  })
+  const message = {
+    attempt: 0,
+    jobId: `cache-rebuild:item:${targetId}:${Date.now()}`,
+    targetId,
+    type: 'cache.rebuild' as const,
+  }
+
+  await createAndEnqueueDirectoryJob(
+    { D1: req.payload.db.drizzle.$client as D1Database },
+    (req.payload.config.custom?.cloudflareEnv as DirectoryBindings | undefined)?.DIRECTORY_CACHE_QUEUE,
+    message,
+  )
 
   return doc
 }
@@ -110,4 +114,3 @@ export const DirectoryItems: CollectionConfig = {
     },
   ],
 }
-

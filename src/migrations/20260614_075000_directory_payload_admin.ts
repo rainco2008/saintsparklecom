@@ -17,7 +17,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     \`created_at\` text
   );`)
 
-  await db.run(sql`ALTER TABLE \`directory_audit_logs\` ADD \`updated_at\` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL;`)
   await db.run(
     sql`CREATE INDEX \`directory_audit_logs_updated_at_idx\` ON \`directory_audit_logs\` (\`updated_at\`);`,
   )
