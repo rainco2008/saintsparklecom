@@ -17,6 +17,7 @@ const realpath = (value: string) => (fs.existsSync(value) ? fs.realpathSync(valu
 
 const isCLI = process.argv.some((value) => realpath(value).endsWith(path.join('payload', 'bin.js')))
 const isProduction = process.env.NODE_ENV === 'production'
+const isNextBuild = process.env.NEXT_PHASE === 'phase-production-build'
 
 const createLog =
   (level: string, fn: typeof console.log) => (objOrMsg: object | string, msg?: string) => {
@@ -39,9 +40,16 @@ const cloudflareLogger = {
 } as any // Use PayloadLogger type when it's exported
 
 const cloudflare =
-  isCLI || !isProduction
-    ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
+  isNextBuild
+    ? ({
+        env: {
+          D1: {} as D1Database,
+          R2: {} as R2Bucket,
+        },
+      } as CloudflareContext)
+    : isCLI || !isProduction
+      ? await getCloudflareContextFromWrangler()
+      : await getCloudflareContext({ async: true })
 
 export default buildConfig({
   admin: {
@@ -52,7 +60,10 @@ export default buildConfig({
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret:
+    process.env.PAYLOAD_SECRET ||
+    (cloudflare.env as CloudflareEnv & { PAYLOAD_SECRET?: string }).PAYLOAD_SECRET ||
+    (isNextBuild ? 'build-time-secret' : ''),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
@@ -72,7 +83,7 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction,
+        remoteBindings: isProduction && !isNextBuild,
       } satisfies GetPlatformProxyOptions),
   )
 }
