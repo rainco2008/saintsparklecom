@@ -69,6 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'directory-categories': DirectoryCategory;
+    'directory-items': DirectoryItem;
+    'directory-jobs': DirectoryJob;
+    'directory-audit-logs': DirectoryAuditLog;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +82,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'directory-categories': DirectoryCategoriesSelect<false> | DirectoryCategoriesSelect<true>;
+    'directory-items': DirectoryItemsSelect<false> | DirectoryItemsSelect<true>;
+    'directory-jobs': DirectoryJobsSelect<false> | DirectoryJobsSelect<true>;
+    'directory-audit-logs': DirectoryAuditLogsSelect<false> | DirectoryAuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -87,8 +95,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'directory-settings': DirectorySetting;
+  };
+  globalsSelect: {
+    'directory-settings': DirectorySettingsSelect<false> | DirectorySettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -161,6 +173,86 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-categories".
+ */
+export interface DirectoryCategory {
+  id: number;
+  title: string;
+  slug: string;
+  description?: string | null;
+  status: 'active' | 'hidden';
+  sortOrder: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-items".
+ */
+export interface DirectoryItem {
+  id: number;
+  title: string;
+  slug: string;
+  category?: (number | null) | DirectoryCategory;
+  summary?: string | null;
+  description?: string | null;
+  websiteUrl?: string | null;
+  status: 'draft' | 'pending' | 'published' | 'archived';
+  submitterUserId?: string | null;
+  reviewedByAdmin?: (number | null) | User;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-jobs".
+ */
+export interface DirectoryJob {
+  id: number;
+  jobId: string;
+  type:
+    | 'ai.generate'
+    | 'cache.rebuild'
+    | 'embedding.delete'
+    | 'embedding.upsert'
+    | 'media.cleanup'
+    | 'sitemap.rebuild'
+    | 'stripe.entitlement.update';
+  targetId: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  attempt: number;
+  lockedAt?: string | null;
+  completedAt?: string | null;
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-audit-logs".
+ */
+export interface DirectoryAuditLog {
+  id: number;
+  actorType: 'admin' | 'system' | 'user';
+  actorId?: string | null;
+  action: string;
+  targetType: string;
+  targetId: string;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -190,6 +282,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'directory-categories';
+        value: number | DirectoryCategory;
+      } | null)
+    | ({
+        relationTo: 'directory-items';
+        value: number | DirectoryItem;
+      } | null)
+    | ({
+        relationTo: 'directory-jobs';
+        value: number | DirectoryJob;
+      } | null)
+    | ({
+        relationTo: 'directory-audit-logs';
+        value: number | DirectoryAuditLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -273,6 +381,67 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-categories_select".
+ */
+export interface DirectoryCategoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  status?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-items_select".
+ */
+export interface DirectoryItemsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  category?: T;
+  summary?: T;
+  description?: T;
+  websiteUrl?: T;
+  status?: T;
+  submitterUserId?: T;
+  reviewedByAdmin?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-jobs_select".
+ */
+export interface DirectoryJobsSelect<T extends boolean = true> {
+  jobId?: T;
+  type?: T;
+  targetId?: T;
+  status?: T;
+  attempt?: T;
+  lockedAt?: T;
+  completedAt?: T;
+  error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-audit-logs_select".
+ */
+export interface DirectoryAuditLogsSelect<T extends boolean = true> {
+  actorType?: T;
+  actorId?: T;
+  action?: T;
+  targetType?: T;
+  targetId?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -310,6 +479,30 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-settings".
+ */
+export interface DirectorySetting {
+  id: number;
+  enablePublicDirectory?: boolean | null;
+  cacheFreshSeconds: number;
+  cacheStaleSeconds: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "directory-settings_select".
+ */
+export interface DirectorySettingsSelect<T extends boolean = true> {
+  enablePublicDirectory?: T;
+  cacheFreshSeconds?: T;
+  cacheStaleSeconds?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

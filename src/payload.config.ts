@@ -10,6 +10,7 @@ import { r2Storage } from '@payloadcms/storage-r2'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
+import { cloudflareDirectoryPlugin } from './plugins/cloudflare-directory'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -67,9 +68,13 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: sqliteD1Adapter({ binding: cloudflare.env.D1 }),
+  db: sqliteD1Adapter({
+    binding: cloudflare.env.D1,
+    push: process.env.PAYLOAD_DISABLE_DB_PUSH === 'true' ? false : undefined,
+  }),
   logger: isProduction ? cloudflareLogger : undefined,
   plugins: [
+    cloudflareDirectoryPlugin(),
     r2Storage({
       bucket: cloudflare.env.R2,
       collections: { media: true },

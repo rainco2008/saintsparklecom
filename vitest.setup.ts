@@ -3,4 +3,5 @@
 // Load .env files
 import 'dotenv/config'
 
+process.env.PAYLOAD_DISABLE_DB_PUSH = 'true'
 process.env.PAYLOAD_SECRET ||= 'test-payload-secret'
